@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+uint8_t rx2_data;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +49,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -87,6 +88,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+
+  /* Initialize interrupts */
+  MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -94,6 +98,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint8_t a = 'a';
+  HAL_UART_Receive_IT(&huart2, &rx2_data, 1); // 인터럽트 수신 대기 함수
   while (1)
   {
     /* USER CODE END WHILE */
@@ -107,8 +112,8 @@ int main(void)
 	  else { // LED on condition
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET); // LED on
 //		  HAL_Delay(1000); // delay 는 ms 단위
-		  // UART IP instance number, Data pointer, Data size,
-		  HAL_UART_Transmit(&huart2, &a, 1, 10);
+		  // UART IP instance pointer, Data pointer, Data size,
+//		  HAL_UART_Transmit(&huart2, &a, 1, 10);
 	  }
   }
   /* USER CODE END 3 */
@@ -150,7 +155,30 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief NVIC Configuration.
+  * @retval None
+  */
+static void MX_NVIC_Init(void)
+{
+  /* USART2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(USART2_IRQn);
+}
+
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if(huart->Instance==USART2){
+	  HAL_UART_Receive_IT(&huart2, &rx2_data, 1); // receive interrupt 발생
+	  HAL_UART_Transmit(&huart2, &rx2_data, 1, 10); // 전송
+//	  HAL_UART_Transmit_IT(&huart2, &rx2_data, 1);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET); // LED on
+//	  HAL_Delay(100); // delay 는 ms 단위
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // LED off
+//	  HAL_UART_Transmit(&huart2, &rx2_data, 1, 10); // 전송
+  }
+}
 
 /* USER CODE END 4 */
 
