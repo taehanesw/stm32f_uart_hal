@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-uint8_t rx2_data;
+uint8_t rx2_data[10];
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -98,7 +98,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint8_t a = 'a';
-  HAL_UART_Receive_IT(&huart2, &rx2_data, 1); // 인터럽트 수신 대기 함수
+  HAL_UART_Receive_IT(&huart2, &rx2_data, 10); // 인터럽트 수신 대기 함수 -> 10개의 문자가 들어와야 실행
   while (1)
   {
     /* USER CODE END WHILE */
@@ -170,8 +170,8 @@ static void MX_NVIC_Init(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart->Instance==USART2){
-	  HAL_UART_Receive_IT(&huart2, &rx2_data, 1); // receive interrupt 발생
-	  HAL_UART_Transmit(&huart2, &rx2_data, 1, 10); // 전송
+	  HAL_UART_Receive_IT(&huart2, &rx2_data, 10); // receive interrupt 발생 -> 10개 문자가 들어와야 발생
+	  HAL_UART_Transmit(&huart2, &rx2_data, 10, 10); // 전송 -> 10개 문자를 송신
 //	  HAL_UART_Transmit_IT(&huart2, &rx2_data, 1);
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET); // LED on
 //	  HAL_Delay(100); // delay 는 ms 단위
